@@ -63,11 +63,52 @@ class LolApi:
         userList = curs.fetchall()
         print(pd.DataFrame(userList))
 
-        LolApi.getRankInfo(userList)
+        LolApi.getRankInfo(userList, apiKey)
 
-    def getRankInfo(userList):
+    def getRankInfo(userList, apiKey):
         print("랭크 정보 조회")
-        print(len(userList))
+
+        for userInfo in userList:            
+            eucId = userInfo['EUC_ID']        
+
+        LolApi.getLolUserRank(eucId, apiKey)
         
+    def getLolUserRank(eucId, apiKey):
+        print(eucId)
+
+        ##랭크 정보 조회 API
+        r = requests.get(LolApi.apiUrl + "/lol/league/v4/entries/by-summoner/"+ eucId +"?api_key="+ apiKey)        
+        rankJson = r.json()
+
+        LolApi.parsingRankInfo(rankJson)
+
+    def parsingRankInfo(rankList):
+
+        for rankInfo in rankList:            
+            
+            sql = " INSERT INTO L_USER_RANK (USER_GAME_ID, QUE_TYPE, TIER, RANK_LVL, LEAGUE_PT, WINS_CNT, LOSSES_CNT, REG_DATE, UPD_DATE) "
+            sql += " VALUES (%s, %s, %s, %s, %s, %s, NOW(), NOW()) "
+            sql += " ON DUPLICATE KEY "
+            sql += " UPDATE "
+            sql += " TIER = %s "
+            sql += " , RANK_LVL = %s "
+            sql += " , LEAGUE_PT = %s "
+            sql += " , WINS_CNT = %s "
+            sql += " , LOSSES_CNT = %s "
+            sql += " , UPD_DATE = NOW() "
+            curs.execute(sql, (rankInfo['summonerName'], rankInfo['queueType'], rankInfo['tier'], rankInfo['rank'], rankInfo['leaguePoints'], rankInfo['wins'], rankInfo['losses'], userJson['id'], userJson['accountId'], userJson['puuid']))
+            conn.commit()
+            
+				    #{summonerName}
+				   ,#{queueType}
+				   ,#{tier}
+				   ,#{rank}
+				   ,#{leaguePoints}
+				   ,#{wins}
+				   ,#{losses}
+				   ,NOW()
+				   ,NOW()
+		)
+
 
 LolApi.createUserHs("고이우")
