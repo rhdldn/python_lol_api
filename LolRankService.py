@@ -1,4 +1,27 @@
 import commonUtil
+import requests
+import LolMatchService
+
+#랭크 정보 조회
+def getRankInfo(userId, userList, apiKey):
+    print("랭크 정보 조회")
+
+    for userInfo in userList:
+        eucId = userInfo['EUC_ID']
+        accountId = userInfo['ACCOUNT_ID']
+
+    getLolUserRank(userId, eucId, accountId, apiKey)
+
+#랭크 정보 조회 API
+def getLolUserRank(userId, eucId, accountId, apiKey):
+    print(eucId)
+
+    ##랭크 정보 조회 API
+    r = requests.get(commonUtil.apiUrl + "lol/league/v4/entries/by-summoner/"+ eucId +"?api_key="+ apiKey)
+    rankJson = r.json()
+
+    parsingRankInfo(rankJson)
+    LolMatchService.getLstMatchInfo(rankJson, userId, accountId, apiKey)
 
 #랭크 정보 파싱
 def parsingRankInfo(rankList):
@@ -17,5 +40,4 @@ def parsingRankInfo(rankList):
         sql += " , LOSSES_CNT = %s "
         sql += " , UPD_DATE = NOW() "
         commonUtil.curs.execute(sql, (rankInfo['summonerName'], rankInfo['queueType'], rankInfo['tier'], rankInfo['rank'], rankInfo['leaguePoints'], rankInfo['wins'], rankInfo['losses'], rankInfo['tier'], rankInfo['rank'], rankInfo['leaguePoints'], rankInfo['wins'], rankInfo['losses']))
-        commonUtil.conn.commit()		
-
+        commonUtil.conn.commit()

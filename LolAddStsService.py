@@ -2,7 +2,7 @@ import requests
 import json
 import pandas as pd
 import commonUtil
-import getRankInfo
+import LolRankService
 
 #유저 전적 등록/갱신
 def createUserHs(userId):
@@ -54,6 +54,6 @@ def createUserHs(userId):
     userList = commonUtil.curs.fetchall()
     print(pd.DataFrame(userList))
 
-    getRankInfo.getRankInfo(userId, userList, apiKey)
+    LolRankService.getRankInfo(userId, userList, apiKey)
 
 createUserHs("고이우")
